@@ -1,0 +1,144 @@
+[gd_scene load_steps=9 format=3 uid="uid://c4chs4rj7jf46"]
+
+[ext_resource type="Script" uid="uid://dkngimmgwy7yw" path="res://Scripts/Main.cs" id="1_jjgbg"]
+[ext_resource type="Texture2D" uid="uid://bhc7v7scekd8b" path="res://Graphics/icon.svg" id="2_bo1nx"]
+[ext_resource type="Texture2D" uid="uid://cnu2v26ybpuaj" path="res://Graphics/eye_opened.svg" id="2_jjvhh"]
+[ext_resource type="Texture2D" uid="uid://c3y2nto4c00hw" path="res://Graphics/eye_closed.svg" id="3_kry3j"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jjgbg"]
+bg_color = Color(0.156863, 0.156863, 0.156863, 1)
+corner_detail = 1
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_bo1nx"]
+
+[sub_resource type="SystemFont" id="SystemFont_jjgbg"]
+font_names = PackedStringArray("Consolas")
+subpixel_positioning = 0
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_jjgbg"]
+
+[node name="MainUI" type="Panel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_jjgbg")
+script = ExtResource("1_jjgbg")
+
+[node name="MainContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="InputOptionsContainer" type="HBoxContainer" parent="MainContainer"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="PathVisibilityToggle" type="TextureButton" parent="MainContainer/InputOptionsContainer"]
+layout_mode = 2
+toggle_mode = true
+texture_normal = ExtResource("2_jjvhh")
+texture_pressed = ExtResource("3_kry3j")
+
+[node name="FilePathPreview" type="LineEdit" parent="MainContainer/InputOptionsContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/focus = SubResource("StyleBoxEmpty_bo1nx")
+placeholder_text = "a file path . . ."
+editable = false
+context_menu_enabled = false
+emoji_menu_enabled = false
+virtual_keyboard_enabled = false
+middle_mouse_paste_enabled = false
+drag_and_drop_selection_enabled = false
+select_all_on_focus = true
+secret_character = "#"
+
+[node name="UploadButton" type="Button" parent="MainContainer/InputOptionsContainer"]
+layout_mode = 2
+text = "Load Image"
+
+[node name="ProcessButton" type="Button" parent="MainContainer/InputOptionsContainer"]
+layout_mode = 2
+text = "Convert"
+
+[node name="OutputOptionsContainer" type="HBoxContainer" parent="MainContainer"]
+layout_mode = 2
+
+[node name="ScaleLabel" type="Label" parent="MainContainer/OutputOptionsContainer"]
+layout_mode = 2
+text = "Scale:"
+
+[node name="ScaleSpinBox" type="SpinBox" parent="MainContainer/OutputOptionsContainer"]
+layout_mode = 2
+min_value = 0.05
+max_value = 1.0
+step = 0.05
+value = 1.0
+
+[node name="DarkModeSwitch" type="CheckButton" parent="MainContainer/OutputOptionsContainer"]
+layout_mode = 2
+button_pressed = true
+text = "Dark Mode"
+
+[node name="BrailleSwitch" type="CheckButton" parent="MainContainer/OutputOptionsContainer"]
+layout_mode = 2
+text = "Braille"
+
+[node name="InvertedSwitch" type="CheckButton" parent="MainContainer/OutputOptionsContainer"]
+layout_mode = 2
+text = "Inverted"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MainContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ASCIIOutput" type="RichTextLabel" parent="MainContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+focus_mode = 2
+theme_override_fonts/normal_font = SubResource("SystemFont_jjgbg")
+theme_override_font_sizes/normal_font_size = 16
+theme_override_styles/focus = SubResource("StyleBoxEmpty_jjgbg")
+bbcode_enabled = true
+text = "todo notes:
+- beautify the app
+- not a big issue but
+  sometimes a lot of errors pop up when processing scaled down images
+- save settings after closing the app
+- make a introduction screen 
+  (details about what each options do)
+
+extra notes:
+- its just a random small project that doesnt go anywhere higher,
+  you dont have to go crazy on it
+- i hate how empty braille character has different size than rest of them"
+fit_content = true
+autowrap_mode = 0
+selection_enabled = true
+
+[node name="FileDialog" type="FileDialog" parent="."]
+title = "Open a File"
+ok_button_text = "Open"
+file_mode = 0
+access = 2
+filters = PackedStringArray("*.png", "*.jpg, *.jpeg", "*.webp", "*.svg")
+use_native_dialog = true
+
+[node name="DEBUG ImageOutput" type="TextureRect" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(2, 2)
+texture = ExtResource("2_bo1nx")
