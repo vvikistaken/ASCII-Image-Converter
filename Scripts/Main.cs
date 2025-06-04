@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -55,7 +56,7 @@ public partial class Main : Panel
     public override void _Ready()
     {
         GD.Print("works!!!");
-        GD.Print("for a comeback project, im kinda goated at it");
+        GD.Print("for a comeback project, im kinda goated at it\n");
 
         // node assignments
         _MainContainer = GetNode<VBoxContainer>("MainContainer");
@@ -110,7 +111,7 @@ public partial class Main : Panel
         if (error != Error.Ok)
         {
             GD.PrintErr("Failed to load config file: " + error + "\nCreating a new config file.");
-            // let's leave that one out
+            // let's leave that one out, no reason really
             // _ConfigFile.SetValue("Options", "Path", _FilePathPreview.Text);
             _ConfigFile.SetValue("Options", "PathVisible", _PathVisibilityToggle.ButtonPressed);
             _ConfigFile.SetValue("Options", "OutputScale", _ScaleSpinBox.Value);
@@ -130,8 +131,7 @@ public partial class Main : Panel
         _isDarkMode = _DarkModeSwitch.ButtonPressed;
         _brailleMode = _BrailleSwitch.ButtonPressed;
         _invertedColors = _InvertedSwitch.ButtonPressed;
-        _ASCIIOutput.AddThemeStyleboxOverride("normal", new StyleBoxFlat { BgColor = new Color(0.1f, 0.1f, 0.1f) });
-        _ASCIIOutput.AddThemeColorOverride("default_color", new Color(0.9f, 0.9f, 0.9f));
+        UpdateDarkMode();
         
     }
     public override void _Input(InputEvent @event)
@@ -143,7 +143,8 @@ public partial class Main : Panel
 
         _ASCIIOutput.AddThemeFontSizeOverride("normal_font_size", _outputFontSize);
     }
-
+    //
+    //
     // singal handlers
     public void OnUploadButtonPressed()
     {
@@ -174,35 +175,39 @@ public partial class Main : Panel
         _ConfigFile.SetValue("Options", "PathVisible", _PathVisibilityToggle.ButtonPressed);
         _ConfigFile.Save(CONFIG_FILE_PATH);
     }
-
+    //
+    //
     // custom methods
     public void LoadImageFromFile(string filePath)
     {
         if (string.IsNullOrEmpty(filePath))
         {
             GD.PrintErr("No file path provided.");
-            _FilePathPreview.Text = "No file selected.";
+            _FilePathPreview.PlaceholderText = "No file selected.";
+            _FilePathPreview.Text = string.Empty;
             return;
         }
         if (!System.IO.File.Exists(filePath))
         {
             GD.PrintErr("File does not exist: " + filePath);
-            _FilePathPreview.Text = "File does not exist.";
+            _FilePathPreview.PlaceholderText = "File does not exist.";
+            _FilePathPreview.Text = string.Empty;
             return;
         }
+        var tempSourceImage = Image.LoadFromFile(filePath);
+        if (tempSourceImage == null)
+        {
+            GD.PrintErr("Failed to load image from file: " + filePath);
+            _FilePathPreview.PlaceholderText = "Failed to load image.";
+            _FilePathPreview.Text = string.Empty;
+            return;
+        }
+        // if everything succeeds
         _currentSourceImage = Image.LoadFromFile(filePath);
+        _FilePathPreview.PlaceholderText = _PathVisibilityToggle.ButtonPressed ? "a file path . . ." : "a hidden file path . . .";
     }
-    public void ProcessImage()
+    public void UpdateDarkMode()
     {
-        _ASCIIOutput.Clear();
-        LoadImageFromFile(_FilePathPreview.Text);
-
-        var processedImage = (Image)_currentSourceImage.Duplicate();
-        processedImage.Resize(
-            (int)(_currentSourceImage.GetWidth() * _ScaleSpinBox.Value),
-            (int)(_currentSourceImage.GetHeight() * _ScaleSpinBox.Value * (_brailleMode ? 1 : 0.5)),
-            Image.Interpolation.Bilinear
-        );
         if (_isDarkMode)
         {
             _ASCIIOutput.AddThemeStyleboxOverride("normal", new StyleBoxFlat { BgColor = new Color(0.1f, 0.1f, 0.1f) });
@@ -213,6 +218,20 @@ public partial class Main : Panel
             _ASCIIOutput.AddThemeStyleboxOverride("normal", new StyleBoxFlat { BgColor = new Color(0.9f, 0.9f, 0.9f) });
             _ASCIIOutput.AddThemeColorOverride("default_color", new Color(0.1f, 0.1f, 0.1f));
         }
+    }
+    public void ProcessImage()
+    {
+        _ASCIIOutput.Clear();
+        LoadImageFromFile(_FilePathPreview.Text);
+
+        var processedImage = (Image)_currentSourceImage.Duplicate();
+        processedImage.Resize(
+            (int)(_currentSourceImage.GetWidth() * (_ScaleSpinBox.Value/100)),
+            (int)(_currentSourceImage.GetHeight() * (_ScaleSpinBox.Value/100) * (_brailleMode ? 1 : 0.5)),
+            Image.Interpolation.Bilinear
+        );
+
+        UpdateDarkMode();
 
         if (!_brailleMode) GenerateASCIIImage(processedImage);
         else GenerateBrailleImage(processedImage);

@@ -78,26 +78,34 @@ layout_mode = 2
 
 [node name="ScaleLabel" type="Label" parent="MainContainer/OutputOptionsContainer"]
 layout_mode = 2
+tooltip_text = "Scales the output down depending on the amount between 0.05 to 1.0"
+mouse_filter = 1
 text = "Scale:"
 
 [node name="ScaleSpinBox" type="SpinBox" parent="MainContainer/OutputOptionsContainer"]
 layout_mode = 2
-min_value = 0.05
-max_value = 1.0
-step = 0.05
-value = 1.0
+tooltip_text = "Scales the output down depending on the amount between 0.05 to 1.0"
+min_value = 1.0
+value = 100.0
+rounded = true
+suffix = "%"
 
 [node name="DarkModeSwitch" type="CheckButton" parent="MainContainer/OutputOptionsContainer"]
 layout_mode = 2
+tooltip_text = "Changes the output screen between dark and light mode"
 button_pressed = true
 text = "Dark Mode"
 
 [node name="BrailleSwitch" type="CheckButton" parent="MainContainer/OutputOptionsContainer"]
 layout_mode = 2
-text = "Braille Version"
+tooltip_text = "Turns the output into braille characters
+May disregard other selected options"
+text = "Braille"
 
 [node name="InvertedSwitch" type="CheckButton" parent="MainContainer/OutputOptionsContainer"]
 layout_mode = 2
+tooltip_text = "Reverses the characters used in output
+Transparent pixels will still be invisible"
 text = "Inverted"
 
 [node name="ScrollContainer" type="ScrollContainer" parent="MainContainer"]
@@ -119,6 +127,9 @@ text = "todo notes:
   sometimes a lot of errors pop up when processing scaled down images
 - make a introduction screen 
   (details about what each options do)
+- try to make ascii output more monospaced (somehow)
+- fix up scrolling on ascii output
+  (for more details, ctrl + scroll_wheel)
 
 an ambitious idea:
 - add edges to ascii art
@@ -128,6 +139,7 @@ an ambitious idea:
 extra notes:
 - its just a random small project that doesnt go anywhere higher,
   you dont have to go crazy on it
+    (i didn't take this advice seriously at all)
 - i hate how empty braille character has a different size than rest of them"
 fit_content = true
 autowrap_mode = 0
