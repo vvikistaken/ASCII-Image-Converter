@@ -41,15 +41,22 @@ theme_override_constants/separation = 4
 [node name="PathVisibilityToggle" type="TextureButton" parent="MainContainer/InputOptionsContainer"]
 layout_mode = 2
 toggle_mode = true
-texture_normal = ExtResource("2_jjvhh")
-texture_pressed = ExtResource("3_kry3j")
+button_pressed = true
+texture_normal = ExtResource("3_kry3j")
+texture_pressed = ExtResource("2_jjvhh")
 
-[node name="FilePathPreview" type="LineEdit" parent="MainContainer/InputOptionsContainer"]
+[node name="ScrollContainer" type="ScrollContainer" parent="MainContainer/InputOptionsContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+vertical_scroll_mode = 0
+
+[node name="FilePathPreview" type="LineEdit" parent="MainContainer/InputOptionsContainer/ScrollContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/focus = SubResource("StyleBoxEmpty_bo1nx")
 placeholder_text = "a file path . . ."
 editable = false
+expand_to_text_length = true
 context_menu_enabled = false
 emoji_menu_enabled = false
 virtual_keyboard_enabled = false
@@ -87,7 +94,7 @@ text = "Dark Mode"
 
 [node name="BrailleSwitch" type="CheckButton" parent="MainContainer/OutputOptionsContainer"]
 layout_mode = 2
-text = "Braille"
+text = "Braille Version"
 
 [node name="InvertedSwitch" type="CheckButton" parent="MainContainer/OutputOptionsContainer"]
 layout_mode = 2
@@ -110,14 +117,18 @@ text = "todo notes:
 - beautify the app
 - not a big issue but
   sometimes a lot of errors pop up when processing scaled down images
-- save settings after closing the app
 - make a introduction screen 
   (details about what each options do)
+
+an ambitious idea:
+- add edges to ascii art
+    instead of simply making a luminance based ascii
+    add some / , - , ) , etc to add more defined edges
 
 extra notes:
 - its just a random small project that doesnt go anywhere higher,
   you dont have to go crazy on it
-- i hate how empty braille character has different size than rest of them"
+- i hate how empty braille character has a different size than rest of them"
 fit_content = true
 autowrap_mode = 0
 selection_enabled = true

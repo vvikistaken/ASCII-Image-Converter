@@ -8,8 +8,9 @@ public partial class Main : Panel
 {
     const string CHAR_LUMINANCE_LIGHT = " #@*+=-:."; // ASCII characters based on luminance
     const string CHAR_LUMINANCE_DARK = " .:-=+*@#"; // Reversed for dark background
-    //this took me like 3 hours
-    // empty braille (⠀) 　
+    const string CONFIG_FILE_PATH = "user://config.cfg";
+    // this took me like 3 hours
+    // empty braille (⠀), if i ever need it
     static readonly string[,] BRAILLE = new string[16, 16]
     {
         {"⢀","⠈","⠐","⠘","⠠","⠨","⠰","⠸","⢀","⢈","⢐","⢘","⢠","⢨","⢰","⢸"},
@@ -29,6 +30,7 @@ public partial class Main : Panel
         {"⡆","⡎","⡖","⡞","⡦","⡮","⡶","⡾","⣆","⣎","⣖","⣞","⣦","⣮","⣶","⣾"},
         {"⡇","⡏","⡗","⡟","⡧","⡯","⡷","⡿","⣇","⣏","⣗","⣟","⣧","⣯","⣷","⣿"}
     };
+    // kinda not using it, all of it is hardcoded instead
     static readonly int[,] EDGE_DETECTION_KERNEL = new int[3, 3]
     {
         { -1, -1, -1 },
@@ -48,6 +50,7 @@ public partial class Main : Panel
     private RichTextLabel _ASCIIOutput;
     private FileDialog _FileDialog;
     private CheckButton _DarkModeSwitch, _BrailleSwitch, _InvertedSwitch;
+    private ConfigFile _ConfigFile;
 
     public override void _Ready()
     {
@@ -63,7 +66,7 @@ public partial class Main : Panel
         _ASCIIOutput = _MainContainer.GetNode<ScrollContainer>("ScrollContainer").GetNode<RichTextLabel>("ASCIIOutput");
 
         _PathVisibilityToggle = _InputOptionsContainer.GetNode<TextureButton>("PathVisibilityToggle");
-        _FilePathPreview = _InputOptionsContainer.GetNode<LineEdit>("FilePathPreview");
+        _FilePathPreview = _InputOptionsContainer.GetNode<LineEdit>("ScrollContainer/FilePathPreview");
         _UploadButton = _InputOptionsContainer.GetNode<Button>("UploadButton");
         _ProcessButton = _InputOptionsContainer.GetNode<Button>("ProcessButton");
 
@@ -74,19 +77,62 @@ public partial class Main : Panel
 
         // signals
         _PathVisibilityToggle.Toggled += OnPathVisibilityButtonToggled;
-        _UploadButton.Pressed += OnUploadButtonPressed;
-        _ProcessButton.Pressed += OnProcessButtonPressed;
+        _UploadButton.Pressed += OnUploadButtonPressed; 
+        _ProcessButton.Pressed += OnProcessButtonPressed; 
         _FileDialog.FileSelected += OnFileSelected;
-        _DarkModeSwitch.Toggled += (isChecked)=> _isDarkMode = isChecked;
-        _BrailleSwitch.Toggled += (isChecked) => _brailleMode = isChecked;
-        _InvertedSwitch.Toggled += (isChecked) => _invertedColors = isChecked;
+        _ScaleSpinBox.ValueChanged += (value) =>
+        {
+            _ConfigFile.SetValue("Options", "OutputScale", value);
+            _ConfigFile.Save(CONFIG_FILE_PATH);
+        };
+        _DarkModeSwitch.Toggled += (isChecked) =>
+        {
+            _isDarkMode = isChecked;
+            _ConfigFile.SetValue("Options", "DarkMode", isChecked);
+            _ConfigFile.Save(CONFIG_FILE_PATH);
+        }; 
+        _BrailleSwitch.Toggled += (isChecked) =>
+        {
+            _brailleMode = isChecked;
+            _ConfigFile.SetValue("Options", "BrailleMode", isChecked);
+            _ConfigFile.Save(CONFIG_FILE_PATH);
+        };
+        _InvertedSwitch.Toggled += (isChecked) =>
+        {
+            _invertedColors = isChecked;
+            _ConfigFile.SetValue("Options", "InvertedColors", isChecked);
+            _ConfigFile.Save(CONFIG_FILE_PATH);
+        }; 
 
-        // beggining states
+        // fetching beginning states
+        _ConfigFile = new ConfigFile();
+        var error = _ConfigFile.Load(CONFIG_FILE_PATH);
+        if (error != Error.Ok)
+        {
+            GD.PrintErr("Failed to load config file: " + error + "\nCreating a new config file.");
+            // let's leave that one out
+            // _ConfigFile.SetValue("Options", "Path", _FilePathPreview.Text);
+            _ConfigFile.SetValue("Options", "PathVisible", _PathVisibilityToggle.ButtonPressed);
+            _ConfigFile.SetValue("Options", "OutputScale", _ScaleSpinBox.Value);
+            _ConfigFile.SetValue("Options", "DarkMode", _DarkModeSwitch.ButtonPressed);
+            _ConfigFile.SetValue("Options", "BrailleMode", _BrailleSwitch.ButtonPressed);
+            _ConfigFile.SetValue("Options", "InvertedColors", _InvertedSwitch.ButtonPressed);
+
+            _ConfigFile.Save(CONFIG_FILE_PATH);
+        }
+        _PathVisibilityToggle.ButtonPressed = (bool)_ConfigFile.GetValue("Options", "PathVisible", true);
+        _ScaleSpinBox.Value = (float)_ConfigFile.GetValue("Options", "OutputScale", 1.0f);
+        _DarkModeSwitch.ButtonPressed = (bool)_ConfigFile.GetValue("Options", "DarkMode", true);
+        _BrailleSwitch.ButtonPressed = (bool)_ConfigFile.GetValue("Options", "BrailleMode", false);
+        _InvertedSwitch.ButtonPressed = (bool)_ConfigFile.GetValue("Options", "InvertedColors", false);
+
+        // setting beggining states
         _isDarkMode = _DarkModeSwitch.ButtonPressed;
         _brailleMode = _BrailleSwitch.ButtonPressed;
         _invertedColors = _InvertedSwitch.ButtonPressed;
         _ASCIIOutput.AddThemeStyleboxOverride("normal", new StyleBoxFlat { BgColor = new Color(0.1f, 0.1f, 0.1f) });
         _ASCIIOutput.AddThemeColorOverride("default_color", new Color(0.9f, 0.9f, 0.9f));
+        
     }
     public override void _Input(InputEvent @event)
     {
@@ -122,8 +168,11 @@ public partial class Main : Panel
     }
     public void OnPathVisibilityButtonToggled(bool toggled_on)
     {
-        _FilePathPreview.Secret = toggled_on;
-        _FilePathPreview.PlaceholderText = toggled_on ? "a hidden file path . . ." : "a file path . . .";
+        _FilePathPreview.Secret = !toggled_on;
+        _FilePathPreview.PlaceholderText = toggled_on ? "a file path . . ." : "a hidden file path . . .";
+
+        _ConfigFile.SetValue("Options", "PathVisible", _PathVisibilityToggle.ButtonPressed);
+        _ConfigFile.Save(CONFIG_FILE_PATH);
     }
 
     // custom methods
